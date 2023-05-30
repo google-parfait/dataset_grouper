@@ -15,6 +15,6 @@ license.
 If you're interested in learning more about responsible AI practices, please
 see Google AI's [Responsible AI Practices](https://ai.google/education/responsible-ai-practices).
 
-`dataset_grouper` is Apache 2.0 licensed. See the [`LICENSE`](LICENSE) file.
+Dataset Grouper is Apache 2.0 licensed. See the [`LICENSE`](LICENSE) file.
 
 This is not an officially supported Google product.
