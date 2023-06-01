@@ -67,26 +67,15 @@ class KeyAndGroupTest(absltest.TestCase):
       util.assert_that(output, util.equal_to(expected_output))
 
 
+  # TODO(b/285414270): Figure out how to re-configure these tests to use some
+  # kind of `mock` operation on the serialization, rather than just testing
+  # that the type of the serialized object is correct.
 class ToKeyedSequenceExamplesTest(tf.test.TestCase):
 
-  def _make_len_and_type_assert_fn(
-      self,
-      expected_len: int,
-      key_type=bytes,
-      value_type=tf.train.SequenceExample,
-  ):
-    def _assert_fn(actual):
-      self.assertLen(actual, expected_len)
-      for keyed_value in actual:
-        self.assertLen(keyed_value, 2)
-        key, value = keyed_value
-        self.assertIsInstance(key, key_type)
-        self.assertIsInstance(value, value_type)
-
-    return _assert_fn
-
   def test_make_sequence_data(self):
-    features_dict = tfds.features.FeaturesDict({'a': np.str_, 'b': np.int32})
+    features_dict = tfds.features.FeaturesDict(
+        {'a': np.str_, 'b': np.float32}
+    )
     examples = [
         {'a': tf.constant('foo'), 'b': tf.constant(1.0)},
         {'a': tf.constant('foo'), 'b': tf.constant(2.0)},
@@ -95,19 +84,22 @@ class ToKeyedSequenceExamplesTest(tf.test.TestCase):
         {'a': tf.constant('baz'), 'b': tf.constant(5.0)},
     ]
     get_key_fn = lambda x: x['a'].numpy()
+    expected_output = [
+        (b'foo', tf.train.SequenceExample),
+        (b'bar', tf.train.SequenceExample),
+        (b'baz', tf.train.SequenceExample),
+    ]
 
     with test_pipeline.TestPipeline() as p:
       pcoll = p | beam.Create(examples)
       output = beam_transforms.to_keyed_sequence_examples(
           pcoll, get_key_fn, features_dict
       )
-      util.assert_that(
-          output,
-          self._make_len_and_type_assert_fn(expected_len=3),
-      )
+      output_to_type = output | beam.Map(lambda x: (x[0], type(x[1])))
+      util.assert_that(output_to_type, util.equal_to(expected_output))
 
   def test_make_sequence_data_with_filter(self):
-    features_dict = tfds.features.FeaturesDict({'a': np.str_, 'b': np.int32})
+    features_dict = tfds.features.FeaturesDict({'a': np.str_, 'b': np.float32})
     examples = [
         {'a': tf.constant('foo'), 'b': tf.constant(1.0)},
         {'a': tf.constant('foo'), 'b': tf.constant(2.0)},
@@ -121,15 +113,18 @@ class ToKeyedSequenceExamplesTest(tf.test.TestCase):
       key, _ = keyed_examples
       return key in [b'foo', b'baz']
 
+    expected_output = [
+        (b'foo', tf.train.SequenceExample),
+        (b'baz', tf.train.SequenceExample),
+    ]
+
     with test_pipeline.TestPipeline() as p:
       pcoll = p | beam.Create(examples)
       output = beam_transforms.to_keyed_sequence_examples(
           pcoll, get_key_fn, features_dict, filter_fn=filter_fn
       )
-      util.assert_that(
-          output,
-          self._make_len_and_type_assert_fn(expected_len=2),
-      )
+      output_to_type = output | beam.Map(lambda x: (x[0], type(x[1])))
+      util.assert_that(output_to_type, util.equal_to(expected_output))
 
 
 class ComputeGroupCountsTest(absltest.TestCase):
