@@ -2,6 +2,7 @@
 # Project metadata. Available keys are documented at:
 # https://packaging.python.org/en/latest/specifications/declaring-project-metadata
 name = 'dataset_grouper'
+version = "0.1.1"
 description = 'Dataset Grouper - A library for datasets with group-level structure.'
 readme = 'README.md'
 requires-python = '>=3.10'
