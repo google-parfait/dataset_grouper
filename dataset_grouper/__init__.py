@@ -16,7 +16,7 @@
 # A new PyPI release will be pushed everytime `__version__` is increased
 # When changing this, also move the unreleased changes in CHANGELOG.md to the
 # associated version.
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 
 
 from dataset_grouper.core.data_loaders import PartitionedDataset

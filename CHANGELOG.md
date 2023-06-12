@@ -23,14 +23,16 @@ To release a new version (e.g. from `1.0.0` -> `2.0.0`):
 
 ## [Unreleased]
 
-## [0.1.1] - 2023-06-06
+## [0.2.0] - 2023-06-12
 
+* Improved parallelism in Beam pipelines to speed up dataset grouping.
 * Updated pyproject.toml file for initial PyPI release.
+* Added more detailed README file.
 
 ## [0.1.0] - 2023-05-31
 
 * Initial release
 
-[Unreleased]: https://github.com/google-research/dataset_grouper/compare/v0.1.1...HEAD
-[0.1.1]: https://github.com/google-research/dataset_grouper/releases/tag/v0.1.0...v0.1.1
+[Unreleased]: https://github.com/google-research/dataset_grouper/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/google-research/dataset_grouper/releases/tag/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/google-research/dataset_grouper/releases/tag/v0.1.0
