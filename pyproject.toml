@@ -2,7 +2,6 @@
 # Project metadata. Available keys are documented at:
 # https://packaging.python.org/en/latest/specifications/declaring-project-metadata
 name = 'dataset_grouper'
-version = "0.1.1"
 description = 'Dataset Grouper - A library for datasets with group-level structure.'
 readme = 'README.md'
 requires-python = '>=3.10'
@@ -24,12 +23,11 @@ dependencies = [
   'tensorflow-datasets~=4.9.0',
 ]
 
-# `version` is automatically set by flit to use `dataset_grouper.__version__`
 dynamic = ['version']
 
 [build-system]
 # PEP 508 specs
-requires = ["setuptools", "wheel"]
+requires = ["setuptools", "setuptools-scm", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project.optional-dependencies]
@@ -44,3 +42,7 @@ dev = [
 homepage = 'https://github.com/google-research/dataset_grouper'
 repository = 'https://github.com/google-research/dataset_grouper'
 changelog = 'https://github.com/google-research/dataset_grouper/blob/main/CHANGELOG.md'
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"], content-type = "text/markdown"}
+version = {attr = "dataset_grouper.__version__"}
