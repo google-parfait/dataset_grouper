@@ -13,20 +13,43 @@
 # limitations under the License.
 """Utilities for serializing examples."""
 
-from collections.abc import Generator, Iterable
-
-from dataset_grouper.core import tf_utils
 from dataset_grouper.core import types
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
-# This is a general protobuf limit size.
-BYTES_LIMIT = 2e9
 BYTES_FEATURE_NAME = 'serialized_bytes'
 
 
-def _create_sequence_example(
-    bytes_list=list[bytes],
+def serialize_tfds_example(
+    example: types.Example, features_dict: tfds.features.FeaturesDict
+) -> bytes:
+  """Serializes a TFDS example, and computes the number of bytes.
+
+  Args:
+    example: A nested structure of `tf.Tensor`s.
+    features_dict: A `tfds.features.FeaturesDict` matching the structure of
+      `example`.
+
+  Returns:
+    A `bytes` object.
+
+  Raises:
+    KeyError: If `example` and `features_dict` do not have matching structure.
+  """
+  numpy_example = tfds.as_numpy(example)
+  try:
+    serialized_example = features_dict.serialize_example(numpy_example)
+  except KeyError as serialization_error:
+    raise KeyError(
+        'Found a mismatch between the provided features_dict and an example.'
+        ' Please make sure that features_dict matches the structure of *all*'
+        ' examples being serialized.'
+    ) from serialization_error
+  return serialized_example
+
+
+def create_sequence_example(
+    bytes_list: list[bytes],
 ) -> tf.train.SequenceExample:
   bytes_features = [
       tf.train.Feature(bytes_list=tf.train.BytesList(value=[a]))
@@ -37,42 +60,3 @@ def _create_sequence_example(
       feature_list={BYTES_FEATURE_NAME: feature_list}
   )
   return tf.train.SequenceExample(feature_lists=feature_lists)
-
-
-def _bytes_limited_generator(
-    examples: Iterable[types.Example],
-    bytes_limit: float = BYTES_LIMIT,
-) -> Generator[types.Example, None, None]:
-  """Creates an iterator that only yields examples up to some bytes limit."""
-  bytes_sum = 0.0
-  for ex in examples:
-    # This is probably an over-estimate of the serialized tensor size (as it
-    # doesn't account for variable-length coding) but it does not include the
-    # protobuf overhead. We would likely need to change this call if we
-    # encounter problems when pushing the examples into a proto.
-    num_bytes = tf_utils.get_tensor_byte_size(ex)
-    bytes_sum += num_bytes
-    if bytes_sum >= bytes_limit:
-      return
-    yield ex
-
-
-def sequence_example_from_features_dict(
-    examples: Iterable[types.Example],
-    features_dict: tfds.features.FeaturesDict,
-) -> tf.train.SequenceExample:
-  """Creates a `tf.train.SequenceExample` from TFDS examples."""
-  # `FeaturesDict.serialize_example` requires numpy-like structures
-  serialized_examples: list[bytes] = []
-  for example in _bytes_limited_generator(examples):
-    numpy_example = tfds.as_numpy(example)
-    try:
-      serialized_example = features_dict.serialize_example(numpy_example)
-    except KeyError as serialization_error:
-      raise KeyError(
-          'Found a mismatch between the provided features_dict and an example.'
-          ' Please make sure that features_dict matches the structure of *all*'
-          ' examples being serialized.'
-      ) from serialization_error
-    serialized_examples.append(serialized_example)
-  return _create_sequence_example(serialized_examples)

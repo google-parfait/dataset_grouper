@@ -28,7 +28,6 @@ def tfds_to_tfrecords(
     file_path_prefix: str,
     get_key_fn: types.GetKeyFn,
     file_name_suffix: str = '',
-    filter_fn: Optional[types.FilterFn] = None,
     num_shards: Optional[int] = None,
 ) -> beam.Pipeline:
   """Builds a Beam pipeline that partitions a TFDS partitions to TFRecords.
@@ -47,11 +46,6 @@ def tfds_to_tfrecords(
     get_key_fn: A function that takes as input an example from the TFDS dataset
       specified, and that returns bytes identifying the group it belongs to.
     file_name_suffix: A common suffix for the files written.
-    filter_fn: An optional function accepting a tuple `(group_key,
-      group_examples)`, where `group_key` is the shared ID (in bytes, as
-      computed by `get_key_fn`) of the TFDS examples in `group_examples`. This
-      function should return `True` if the group of examples is to be kept, and
-      `False` otherwise.
     num_shards: The number of files (shards) used for output. If not set, the
       number of shards will be automatically set.
 
@@ -66,7 +60,7 @@ def tfds_to_tfrecords(
         tfds_builder, split=split
     )
     keyed_sequence_examples = beam_transforms.to_keyed_sequence_examples(
-        examples, get_key_fn, features_dict, filter_fn=filter_fn
+        examples, get_key_fn, features_dict
     )
     sequence_examples = keyed_sequence_examples | 'RemoveKey' >> beam.Map(
         lambda x: x[1]

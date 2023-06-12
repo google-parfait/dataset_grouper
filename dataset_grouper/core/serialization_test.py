@@ -22,13 +22,33 @@ import tensorflow_datasets as tfds
 
 class SerializationTest(tf.test.TestCase, parameterized.TestCase):
 
+  def test_serialize_tfds_example_with_compatible_features_dict(self):
+    example = {'a': tf.constant(1), 'b': tf.constant(1.0)}
+    features_dict = tfds.features.FeaturesDict({'a': np.int32, 'b': np.float32})
+    serialized_example = serialization.serialize_tfds_example(
+        example, features_dict
+    )
+    self.assertIsInstance(serialized_example, bytes)
+
+  def test_serialize_tfds_example_with_incompatible_features_dict(self):
+    example = {
+        'a': tf.constant(2),
+        'b': tf.constant(2.0),
+        'c': tf.constant('2.0'),
+    }
+    features_dict = tfds.features.FeaturesDict({'a': np.int32, 'b': np.float32})
+    with self.assertRaisesRegex(
+        KeyError, 'Found a mismatch between the provided features_dict'
+    ):
+      serialization.serialize_tfds_example(example, features_dict)
+
   @parameterized.named_parameters(
       ('len1_list', [b'01']),
       ('len3_list', [b'01', b'02', b'03']),
       ('len0_list', []),
   )
   def test_create_sequence_example_has_expected_fields(self, input_bytes):
-    sequence_example = serialization._create_sequence_example(input_bytes)
+    sequence_example = serialization.create_sequence_example(input_bytes)
     self.assertIsInstance(sequence_example, tf.train.SequenceExample)
     self.assertTrue(sequence_example.HasField('feature_lists'))
     feature_list = sequence_example.feature_lists.feature_list
@@ -36,49 +56,6 @@ class SerializationTest(tf.test.TestCase, parameterized.TestCase):
     self.assertEqual(list(feature_list.keys()), expected_keys)
     bytes_list = feature_list[serialization.BYTES_FEATURE_NAME]
     self.assertLen(bytes_list.feature, len(input_bytes))
-
-  def test_bytes_limited_generator_with_limit(self):
-    # 32-bit integers are made up of 4 bytes each
-    examples = [tf.constant(i, dtype=tf.int32) for i in range(5)]
-    bytes_limited_generator = serialization._bytes_limited_generator(
-        examples, bytes_limit=9
-    )
-    output = list(bytes_limited_generator)
-    expected_output = [tf.constant(0), tf.constant(1)]
-    self.assertAllEqual(output, expected_output)
-
-  def test_bytes_limited_generator_without_limit(self):
-    # 32-bit integers are made up of 4 bytes each
-    examples = [tf.constant(i, dtype=tf.int32) for i in range(5)]
-    bytes_limited_generator = serialization._bytes_limited_generator(
-        examples, bytes_limit=10000
-    )
-    output = list(bytes_limited_generator)
-    self.assertAllEqual(output, examples)
-
-  def test_sequence_example_with_compatible_features_dict(self):
-    features_dict = tfds.features.FeaturesDict({'a': np.int32, 'b': np.float32})
-    examples = [
-        {'a': tf.constant(1), 'b': tf.constant(1.0)},
-        {'a': tf.constant(2), 'b': tf.constant(2.0)},
-        {'a': tf.constant(3), 'b': tf.constant(3.0)},
-    ]
-    sequence_example = serialization.sequence_example_from_features_dict(
-        examples, features_dict
-    )
-    self.assertIsInstance(sequence_example, tf.train.SequenceExample)
-
-  def test_sequence_example_with_incompatible_features_dict(self):
-    features_dict = tfds.features.FeaturesDict({'a': np.int32, 'b': np.float32})
-    examples = [
-        {'a': tf.constant(1), 'b': tf.constant(1.0)},
-        {'a': tf.constant(2), 'b': tf.constant(2.0), 'c': tf.constant('2.0')},
-        {'a': tf.constant(3), 'b': tf.constant(3.0)},
-    ]
-    with self.assertRaisesRegex(
-        KeyError, 'Found a mismatch between the provided features_dict'
-    ):
-      serialization.sequence_example_from_features_dict(examples, features_dict)
 
 
 if __name__ == '__main__':

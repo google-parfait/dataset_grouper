@@ -13,54 +13,100 @@
 # limitations under the License.
 """Transformations for loading, grouping, and serializing partitioned data."""
 
-import functools
-from typing import Optional
+from collections.abc import Iterable
 
 import apache_beam as beam
 from dataset_grouper.core import count_utils
 from dataset_grouper.core import serialization
 from dataset_grouper.core import types
+import tensorflow as tf
 import tensorflow_datasets as tfds
 
 
-def key_and_group(
-    examples: beam.PCollection[types.Example],
-    get_key_fn: types.GetKeyFn,
-    filter_fn: Optional[types.FilterFn] = None,
-) -> beam.PCollection[types.GroupedExamples]:
-  """Groups a PCollection of examples by key, and filters out groups."""
-  keyed_examples = examples | 'KeyExamples' >> beam.Map(
-      lambda x: (get_key_fn(x), x)
-  )
-  grouped_examples = keyed_examples | 'GroupExamples' >> beam.GroupByKey()
-  if filter_fn is not None:
-    grouped_examples = grouped_examples | 'FilterGroups' >> beam.Filter(
-        filter_fn
-    )
-  return grouped_examples
+# This is a general protobuf limit size.
+BYTES_LIMIT = 2_000_000_000
+MergeAccumulator = tuple[list[bytes], int]
+
+
+class MergeWithLimitFn(beam.CombineFn):
+  """Creates a list of bytes objects whose total size is at most `BYTES_LIMIT`."""
+
+  def __init__(self, limit: int = BYTES_LIMIT):
+    super().__init__()
+    self._limit = limit
+
+  def create_accumulator(self) -> MergeAccumulator:
+    accum: list[bytes] = []
+    return accum, 0
+
+  def add_input(
+      self, accumulator: MergeAccumulator, element: bytes
+  ) -> MergeAccumulator:
+    total_bytes_list, total_bytes = accumulator
+    num_bytes = len(element)
+    if total_bytes + num_bytes >= self._limit:
+      return accumulator
+    else:
+      total_bytes += num_bytes
+      total_bytes_list.append(element)
+      return total_bytes_list, total_bytes
+
+  def merge_accumulators(
+      self, accumulators: Iterable[MergeAccumulator]
+  ) -> MergeAccumulator:
+    total_bytes_list: list[bytes] = []
+    total_bytes = 0
+    for accumulator in accumulators:
+      bytes_list, num_bytes = accumulator
+      if total_bytes + num_bytes < self._limit:
+        total_bytes += num_bytes
+        total_bytes_list += bytes_list
+      else:
+        elements, _ = accumulator
+        for element in elements:
+          num_bytes = len(element)
+          if total_bytes + num_bytes >= self._limit:
+            return total_bytes_list, total_bytes
+          else:
+            total_bytes_list.append(element)
+            total_bytes += num_bytes
+
+    return total_bytes_list, total_bytes
+
+  def extract_output(self, accumulator: MergeAccumulator) -> list[bytes]:
+    examples, _ = accumulator
+    return examples
 
 
 def to_keyed_sequence_examples(
     examples: beam.PCollection[types.Example],
     get_key_fn: types.GetKeyFn,
     features_dict: tfds.features.FeaturesDict,
-    filter_fn: Optional[types.FilterFn] = None,
-) -> beam.PCollection[types.KeyedSequenceExample]:
+) -> beam.PCollection[tuple[bytes, tf.train.SequenceExample]]:
   """Partitions a PCollection of examples as keyed `tf.train.SequenceExample`s."""
-  to_sequence_example = functools.partial(
-      serialization.sequence_example_from_features_dict,
-      features_dict=features_dict,
+
+  def serialize_keyed_example(
+      keyed_example: tuple[bytes, types.Example]
+  ) -> tuple[bytes, bytes]:
+    key, example = keyed_example
+    serialized_example = serialization.serialize_tfds_example(
+        example, features_dict
+    )
+    return key, serialized_example
+
+  def serialize_group(
+      grouped_examples: tuple[bytes, list[bytes]]
+  ) -> tuple[bytes, tf.train.SequenceExample]:
+    group_id, bytes_list = grouped_examples
+    return group_id, serialization.create_sequence_example(bytes_list)
+
+  keyed = examples | 'KeyExamples' >> beam.Map(lambda x: (get_key_fn(x), x))
+  serialized = keyed | 'Serialize' >> beam.Map(serialize_keyed_example)
+  grouped = serialized | 'CombineByKey' >> beam.CombinePerKey(
+      MergeWithLimitFn()
   )
-
-  def sequence_map(
-      grouped_examples: types.GroupedExamples,
-  ) -> types.KeyedSequenceExample:
-    group_id, examples = grouped_examples
-    sequence_example = to_sequence_example(examples)
-    return group_id, sequence_example
-
-  grouped_examples = key_and_group(examples, get_key_fn, filter_fn=filter_fn)
-  return grouped_examples | 'SequenceMap' >> beam.Map(sequence_map)
+  serialized_groups = grouped | 'SerializeGroups' >> beam.Map(serialize_group)
+  return serialized_groups
 
 
 def compute_group_counts(

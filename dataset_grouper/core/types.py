@@ -13,11 +13,9 @@
 # limitations under the License.
 """Common python types for type hints."""
 
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Sequence
 import typing
 from typing import Any, Union
-
-import tensorflow as tf
 
 # TODO(b/281123702): Remove this and import `collections.abc.Mapping`.
 Mapping = typing.Mapping
@@ -31,6 +29,3 @@ NestedTensor = Union[
 Feature = Union[Tensor, Mapping[str, 'Feature']]
 Example = Mapping[str, Feature]
 GetKeyFn = Callable[[Example], bytes]
-GroupedExamples = tuple[bytes, Iterable[Example]]
-FilterFn = Callable[[GroupedExamples], bool]
-KeyedSequenceExample = tuple[bytes, tf.train.SequenceExample]

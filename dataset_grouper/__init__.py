@@ -23,6 +23,4 @@ from dataset_grouper.core.data_loaders import PartitionedDataset
 from dataset_grouper.core.tfds_pipelines import tfds_group_counts
 from dataset_grouper.core.tfds_pipelines import tfds_to_tfrecords
 from dataset_grouper.core.types import Example
-from dataset_grouper.core.types import FilterFn
 from dataset_grouper.core.types import GetKeyFn
-from dataset_grouper.core.types import GroupedExamples

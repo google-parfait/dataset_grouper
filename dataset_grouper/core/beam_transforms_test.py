@@ -23,59 +23,134 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 
 
-class KeyAndGroupTest(absltest.TestCase):
+class MergeWithLimitFnTest(absltest.TestCase):
 
-  def test_key_and_group_with_single_groups(self):
-    get_key_fn = lambda x: b'group'
-    examples = [1, 2, 3]
-    expected_groups = [(b'group', [1, 2, 3])]
+  def test_add_input_under_limit(self):
+    accumulator = ([b'one', b'two'], 6)
+    element = b'three'
+    merger = beam_transforms.MergeWithLimitFn(limit=12)
+    output = merger.add_input(accumulator, element)
+    expected_output = ([b'one', b'two', b'three'], 6 + 5)
+    self.assertEqual(output, expected_output)
 
-    with test_pipeline.TestPipeline() as p:
-      pcoll = p | beam.Create(examples)
-      output = beam_transforms.key_and_group(pcoll, get_key_fn)
-      util.assert_that(output, util.equal_to(expected_groups))
+  def test_add_input_over_limit(self):
+    accumulator = ([b'one', b'two'], 6)
+    element = b'four'
+    merger = beam_transforms.MergeWithLimitFn(limit=8)
+    output = merger.add_input(accumulator, element)
+    self.assertEqual(output, accumulator)
 
-  def test_key_and_group_with_two_groups(self):
-    get_key_fn = lambda x: x['a'].encode('utf-8')
+  def test_merge_two_accumulators_under_limit(self):
+    accumulator1 = ([b'one', b'two'], 6)
+    accumulator2 = ([b'three', b'four'], 9)
+    merger = beam_transforms.MergeWithLimitFn(limit=20)
+    output = merger.merge_accumulators([accumulator1, accumulator2])
+    expected_output = ([b'one', b'two', b'three', b'four'], 6 + 9)
+    self.assertEqual(output, expected_output)
+
+  def test_merge_two_accumulators_over_limit(self):
+    accumulator1 = ([b'one', b'two'], 6)
+    accumulator2 = ([b'three', b'four'], 9)
+    merger = beam_transforms.MergeWithLimitFn(limit=12)
+    output = merger.merge_accumulators([accumulator1, accumulator2])
+    expected_output = ([b'one', b'two', b'three'], 6 + 5)
+    self.assertEqual(output, expected_output)
+
+  def test_merge_three_accumulators_over_limit(self):
+    accumulator1 = ([b'one', b'two'], 6)
+    accumulator2 = ([b'three', b'four'], 9)
+    accumulator3 = ([b'five', b'six'], 7)
+    merger = beam_transforms.MergeWithLimitFn(limit=20)
+    output = merger.merge_accumulators(
+        [accumulator1, accumulator2, accumulator3]
+    )
+    expected_output = ([b'one', b'two', b'three', b'four', b'five'], 6 + 9 + 4)
+    self.assertEqual(output, expected_output)
+
+  def test_beam_merges_up_to_bytes_limit_for_no_groups(self):
     examples = [
-        {'a': '1', 'b': 1.0},
-        {'a': '1', 'b': 2.0},
-        {'a': '2', 'b': 3.0},
-        {'a': '2', 'b': 4.0},
+        (b'group1', b'a'),
+        (b'group1', b'b'),
+        (b'group1', b'c'),
+        (b'group2', b'dd'),
+        (b'group2', b'ee'),
     ]
-    expected_groups = [(b'1', examples[:2]), (b'2', examples[2:])]
+    expected_output = [
+        (b'group1', [b'a', b'b', b'c']),
+        (b'group2', [b'dd', b'ee']),
+    ]
 
     with test_pipeline.TestPipeline() as p:
       pcoll = p | beam.Create(examples)
-      output = beam_transforms.key_and_group(pcoll, get_key_fn)
-      util.assert_that(output, util.equal_to(expected_groups))
+      output = pcoll | beam.CombinePerKey(
+          beam_transforms.MergeWithLimitFn(limit=5)
+      )
+      util.assert_that(output, util.equal_to(expected_output))
 
-  def test_filter_fn_is_applied(self):
-    get_key_fn = lambda x: x[0].encode('utf-8')
-    examples = ['aa', 'ab', 'ac', 'ba', 'bb', 'cc']
-    expected_output = [(b'a', ['aa', 'ab', 'ac']), (b'c', ['cc'])]
-
-    def filter_fn(keyed_examples):
-      key, _ = keyed_examples
-      return key in [b'a', b'c']
+  def test_beam_merges_up_to_bytes_limit_for_some_groups(self):
+    examples = [
+        (b'group1', b'a'),
+        (b'group1', b'b'),
+        (b'group1', b'c'),
+        (b'group2', b'dd'),
+        (b'group2', b'ee'),
+    ]
+    expected_output = [(b'group1', [b'a', b'b', b'c']), (b'group2', [b'dd'])]
 
     with test_pipeline.TestPipeline() as p:
       pcoll = p | beam.Create(examples)
-      output = beam_transforms.key_and_group(
-          pcoll, get_key_fn, filter_fn=filter_fn
+      output = pcoll | beam.CombinePerKey(
+          beam_transforms.MergeWithLimitFn(limit=4)
+      )
+      util.assert_that(output, util.equal_to(expected_output))
+
+  def test_beam_merges_up_to_bytes_limit_for_all_groups(self):
+    examples = [
+        (b'group1', b'a'),
+        (b'group1', b'b'),
+        (b'group1', b'c'),
+        (b'group2', b'dd'),
+        (b'group2', b'ee'),
+    ]
+    expected_output = [(b'group1', [b'a', b'b']), (b'group2', [b'dd'])]
+
+    with test_pipeline.TestPipeline() as p:
+      pcoll = p | beam.Create(examples)
+      output = pcoll | beam.CombinePerKey(
+          beam_transforms.MergeWithLimitFn(limit=3)
       )
       util.assert_that(output, util.equal_to(expected_output))
 
 
-  # TODO(b/285414270): Figure out how to re-configure these tests to use some
-  # kind of `mock` operation on the serialization, rather than just testing
-  # that the type of the serialized object is correct.
+# TODO(b/285414270): Figure out how to re-configure these tests to use some
+# kind of `mock` operation on the serialization, rather than just testing that
+# the type of the serialized object is correct.
 class ToKeyedSequenceExamplesTest(tf.test.TestCase):
 
-  def test_make_sequence_data(self):
+  def test_with_single_group(self):
     features_dict = tfds.features.FeaturesDict(
         {'a': np.str_, 'b': np.float32}
     )
+    examples = [
+        {'a': tf.constant('foo'), 'b': tf.constant(1.0)},
+        {'a': tf.constant('foo'), 'b': tf.constant(2.0)},
+        {'a': tf.constant('bar'), 'b': tf.constant(3.0)},
+        {'a': tf.constant('bar'), 'b': tf.constant(4.0)},
+        {'a': tf.constant('baz'), 'b': tf.constant(5.0)},
+    ]
+    get_key_fn = lambda _: b'group'
+    expected_output = [(b'group', tf.train.SequenceExample)]
+
+    with test_pipeline.TestPipeline() as p:
+      pcoll = p | beam.Create(examples)
+      output = beam_transforms.to_keyed_sequence_examples(
+          pcoll, get_key_fn, features_dict
+      )
+      output_to_type = output | beam.Map(lambda x: (x[0], type(x[1])))
+      util.assert_that(output_to_type, util.equal_to(expected_output))
+
+  def test_with_multiple_groups(self):
+    features_dict = tfds.features.FeaturesDict({'a': np.str_, 'b': np.float32})
     examples = [
         {'a': tf.constant('foo'), 'b': tf.constant(1.0)},
         {'a': tf.constant('foo'), 'b': tf.constant(2.0)},
@@ -94,34 +169,6 @@ class ToKeyedSequenceExamplesTest(tf.test.TestCase):
       pcoll = p | beam.Create(examples)
       output = beam_transforms.to_keyed_sequence_examples(
           pcoll, get_key_fn, features_dict
-      )
-      output_to_type = output | beam.Map(lambda x: (x[0], type(x[1])))
-      util.assert_that(output_to_type, util.equal_to(expected_output))
-
-  def test_make_sequence_data_with_filter(self):
-    features_dict = tfds.features.FeaturesDict({'a': np.str_, 'b': np.float32})
-    examples = [
-        {'a': tf.constant('foo'), 'b': tf.constant(1.0)},
-        {'a': tf.constant('foo'), 'b': tf.constant(2.0)},
-        {'a': tf.constant('bar'), 'b': tf.constant(3.0)},
-        {'a': tf.constant('bar'), 'b': tf.constant(4.0)},
-        {'a': tf.constant('baz'), 'b': tf.constant(5.0)},
-    ]
-    get_key_fn = lambda x: x['a'].numpy()
-
-    def filter_fn(keyed_examples):
-      key, _ = keyed_examples
-      return key in [b'foo', b'baz']
-
-    expected_output = [
-        (b'foo', tf.train.SequenceExample),
-        (b'baz', tf.train.SequenceExample),
-    ]
-
-    with test_pipeline.TestPipeline() as p:
-      pcoll = p | beam.Create(examples)
-      output = beam_transforms.to_keyed_sequence_examples(
-          pcoll, get_key_fn, features_dict, filter_fn=filter_fn
       )
       output_to_type = output | beam.Map(lambda x: (x[0], type(x[1])))
       util.assert_that(output_to_type, util.equal_to(expected_output))
