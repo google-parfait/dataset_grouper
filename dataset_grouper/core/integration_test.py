@@ -24,11 +24,12 @@ import tensorflow_datasets as tfds
 class IntegrationTest(tf.test.TestCase):
 
   def test_pipeline_runs_and_data_loads(self):
-    data_dir = self.get_temp_dir()
+    temp_dir = self.get_temp_dir()
+    data_dir = os.path.join(temp_dir, 'data')
     dataset_builder = tfds.testing.DummyMnist(data_dir=data_dir)
     dataset_builder.download_and_prepare()
 
-    save_dir = self.create_tempdir()
+    save_dir = os.path.join(temp_dir, 'save')
     file_path_prefix = os.path.join(save_dir, 'mnist_test.tfrecord')
 
     mnist_pipeline = tfds_pipelines.tfds_to_tfrecords(
