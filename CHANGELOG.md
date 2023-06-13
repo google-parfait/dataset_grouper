@@ -23,6 +23,10 @@ To release a new version (e.g. from `1.0.0` -> `2.0.0`):
 
 ## [Unreleased]
 
+## [0.2.1] - 2023-06-12
+
+* Fixed bug where beam pipelines would not work with datasets that were not globally prepared.
+
 ## [0.2.0] - 2023-06-12
 
 * Improved parallelism in Beam pipelines to speed up dataset grouping.
@@ -33,6 +37,7 @@ To release a new version (e.g. from `1.0.0` -> `2.0.0`):
 
 * Initial release
 
-[Unreleased]: https://github.com/google-research/dataset_grouper/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/google-research/dataset_grouper/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/google-research/dataset_grouper/releases/tag/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/google-research/dataset_grouper/releases/tag/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/google-research/dataset_grouper/releases/tag/v0.1.0
