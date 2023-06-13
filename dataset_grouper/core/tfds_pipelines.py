@@ -23,7 +23,7 @@ import tensorflow_datasets as tfds
 
 
 def tfds_to_tfrecords(
-    dataset_name: str,
+    dataset_builder: tfds.core.DatasetBuilder,
     split: str,
     file_path_prefix: str,
     get_key_fn: types.GetKeyFn,
@@ -38,7 +38,7 @@ def tfds_to_tfrecords(
   in a single `tf.train.SequenceExample`, and written to TFRecords.
 
   Args:
-    dataset_name: The name of the TFDS dataset to partition.
+    dataset_builder: A `tfds.core.DatasetBuilder` to get examples from.
     split: Which split of the dataset should be used.
     file_path_prefix: The file path to write to. The TFRecords files written
       will begin with this prefix, followed by a shard identifier, and a common
@@ -52,12 +52,11 @@ def tfds_to_tfrecords(
   Returns:
     A `beam.Pipeline`.
   """
-  tfds_builder = tfds.builder(dataset_name)
-  features_dict = tfds_builder.info.features
+  features_dict = dataset_builder.info.features
 
   def pipeline(root) -> None:
     examples = root | 'ReadTFDS' >> tfds.beam.ReadFromTFDS(
-        tfds_builder, split=split
+        dataset_builder, split=split
     )
     keyed_sequence_examples = beam_transforms.to_keyed_sequence_examples(
         examples, get_key_fn, features_dict
@@ -80,7 +79,7 @@ def tfds_to_tfrecords(
 
 
 def tfds_group_counts(
-    dataset_name: str,
+    dataset_builder: tfds.core.DatasetBuilder,
     split: str,
     file_path_prefix: str,
     get_key_fn: types.GetKeyFn,
@@ -107,7 +106,7 @@ def tfds_group_counts(
   `delimiter` argument.
 
   Args:
-    dataset_name: The name of the TFDS dataset to partition.
+    dataset_builder: A `tfds.core.DatasetBuilder`.
     split: Which split of the dataset should be used.
     file_path_prefix: The file path to write to. The output files written will
       begin with this prefix, followed by a shard identifier, and a common
@@ -123,12 +122,11 @@ def tfds_group_counts(
   Returns:
     A `beam.Pipeline`.
   """
-  tfds_builder = tfds.builder(dataset_name)
   header = 'group_id,num_examples,num_bytes,num_words'
 
   def pipeline(root) -> None:
     examples = root | 'ReadTFDS' >> tfds.beam.ReadFromTFDS(
-        tfds_builder, split=split
+        dataset_builder, split=split
     )
     formatted_group_counts = beam_transforms.compute_group_counts(
         examples, get_key_fn, delimiter=delimiter
