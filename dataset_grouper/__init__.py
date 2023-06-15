@@ -19,6 +19,8 @@
 __version__ = '0.2.1'
 
 
+from dataset_grouper.core import beam_transforms as beam
+from dataset_grouper.core import serialization
 from dataset_grouper.core.data_loaders import PartitionedDataset
 from dataset_grouper.core.tfds_pipelines import tfds_group_counts
 from dataset_grouper.core.tfds_pipelines import tfds_to_tfrecords
