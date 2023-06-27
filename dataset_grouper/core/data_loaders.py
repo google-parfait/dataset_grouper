@@ -13,7 +13,6 @@
 # limitations under the License.
 """Classes for loading datasets partitioned across groups."""
 
-from collections.abc import Callable
 from typing import Optional, Union
 
 from dataset_grouper.core import serialization
@@ -70,9 +69,6 @@ class PartitionedDataset:
 
   def build_group_stream(
       self,
-      preprocess_fn: Optional[
-          Callable[[tf.data.Dataset], tf.data.Dataset]
-      ] = None,
       buffer_size: Optional[int] = None,
       num_parallel_reads: Optional[int] = None,
       shuffle_files: bool = True,
@@ -84,9 +80,6 @@ class PartitionedDataset:
     formed in the original partition of the dataset.
 
     Args:
-      preprocess_fn: An optional callable that accepts a `tf.data.Dataset` and
-        returns a `tf.data.Dataset`. This is applied separately to the dataset
-        of each group in the underlying partition.
       buffer_size: An optional 64-bit integer representing the number of bytes
         in the TFRecords read buffer. If set to `None`, this is inferred
         automatically. See `tf.data.TFRecordDataset` for more information.
@@ -105,8 +98,6 @@ class PartitionedDataset:
     filenames = tf.data.Dataset.list_files(
         self.file_pattern, shuffle=shuffle_files, seed=shuffle_seed
     )
-    if preprocess_fn is None:
-      preprocess_fn = lambda x: x
 
     def serialized_tensor_to_dataset(
         serialized_tensor: tf.Tensor,
@@ -120,7 +111,7 @@ class PartitionedDataset:
           self.features_dict.deserialize_example,
           num_parallel_calls=tf.data.AUTOTUNE,
       )
-      return preprocess_fn(tfds_ds)
+      return tfds_ds
 
     if num_parallel_reads is None:
       num_parallel_reads = tf.data.AUTOTUNE
