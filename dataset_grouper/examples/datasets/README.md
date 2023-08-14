@@ -28,12 +28,17 @@ Note that `group_by_feature.py` downloads the dataset using
 version of it. If you have already prepared the TFDS dataset, you can specify
 the resulting directory via `--data_dir`.
 
+If you would like to randomly partition the examples instead, you can do this
+uniformly at random by using `group_randomly.py` and according to a Dirichlet
+process by using `group_by_dirichlet_process.py`. See the corresponding files
+for information on using them, and their associated flags.
+
 ## Large-Scale Language Modeling Datasets
 
 Below we give suggested TFDS datasets and group features that will produce
 useful larger scale grouped language modeling datasets. Note that
-`group_by_feature.py` uses Beam's direct runner, which can be slow for larger
-datasets. We highly recommend using
+`group_by_feature.py` uses [Apache Beam](https://beam.apache.org/)'s direct
+runner, which can be slow for larger datasets. We highly recommend using
 [more advanced runners](https://beam.apache.org/documentation/runners/capability-matrix/)
 for these datasets.
 
