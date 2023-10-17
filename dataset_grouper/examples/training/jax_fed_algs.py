@@ -20,7 +20,7 @@ import jax
 import jax.numpy as jnp
 import optax
 
-PRNGKey = jax.random.KeyArray
+PRNGKey = jax.Array
 Params = Any
 Loss = jnp.float32
 ClientOptState = optax.OptState
