@@ -101,7 +101,7 @@ def build_cohort_stream(
       shuffle=shuffle,
   )
   dataset_builder = tfds.builder(_DATASET_NAME)
-  partitioned_dataset = dsgp.SSTablePartitionedDataset(
+  partitioned_dataset = dsgp.PartitionedDataset(
       file_pattern=dataset_shard_pattern,
       tfds_features=dataset_builder.info.features,
   )

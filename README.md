@@ -85,7 +85,8 @@ group_dataset_numpy = group_dataset.as_numpy_iterator()
 ## What Else?
 
 The example above is primarily for educational purposes. MNIST is a relatively
-small dataset, and can generally fit entirely into memory.
+small dataset, and can generally fit entirely into memory. For more interesting
+examples, check out the examples folder.
 
 Dataset Grouper is intended more for large-scale datasets, especially those
 datasets that do not fit into memory. For these datasets, we recommend using
