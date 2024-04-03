@@ -27,16 +27,8 @@ dynamic = ['version']
 
 [build-system]
 # PEP 508 specs
-requires = ["setuptools", "setuptools-scm", "wheel"]
+requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
-
-[project.optional-dependencies]
-# Development deps (unittest, linting, formating,...)
-# Installed through `pip install -e .[dev]`
-dev = [
-    "pytest",
-    "pytest-xdist",
-]
 
 [project.urls]
 homepage = 'https://github.com/google-research/dataset_grouper'
@@ -44,5 +36,4 @@ repository = 'https://github.com/google-research/dataset_grouper'
 changelog = 'https://github.com/google-research/dataset_grouper/blob/main/CHANGELOG.md'
 
 [tool.setuptools.dynamic]
-readme = {file = ["README.md"], content-type = "text/markdown"}
 version = {attr = "dataset_grouper.__version__"}
