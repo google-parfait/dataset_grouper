@@ -22,11 +22,13 @@ jobs:
         # Uncomment to cache of pip dependencies (if tests run too slowly)
         # cache: pip
 
-    - name: Install dependencies
-      run: pip install --upgrade pip
-      run: pip --version
-      run: pip install -r requirements.txt
-      run: pip freeze
+    - name: Install dependencies via pip
+      run: |
+        pip install --upgrade pip
+        pip --version
+        pip install -r requirements.txt --upgrade
+        pip install .
+        pip freeze
 
-    - name: Run tests
+    - name: Run tests  # The -n auto comes from pytest-xdist, and enables running tests in parallel
       run: pytest -vv -n auto

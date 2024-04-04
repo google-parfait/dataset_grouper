@@ -2,5 +2,6 @@ absl-py~=1.4.0
 apache-beam>=2.47.0
 numpy~=1.21
 pytest~=8.0.0
+pytest-xdist~=3.5.0
 tensorflow~=2.12.0
 tensorflow-datasets~=4.9.0
