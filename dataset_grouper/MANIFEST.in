@@ -1,0 +1,2 @@
+global-exclude *_test.py
+prune dataset_grouper/examples
