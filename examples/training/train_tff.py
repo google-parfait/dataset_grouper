@@ -19,8 +19,8 @@ from absl import app
 from absl import flags
 from absl import logging
 import dataset_grouper as dsgp
-from dataset_grouper.examples.training import dataset_utils
-from dataset_grouper.examples.training import model_utils
+from examples.training import dataset_utils
+from examples.training import model_utils
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import tensorflow_federated as tff
