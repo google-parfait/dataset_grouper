@@ -19,13 +19,15 @@ from absl import app
 from absl import flags
 from absl import logging
 import dataset_grouper as dsgp
-from examples.training import dataset_utils
-from examples.training import model_utils
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import tensorflow_federated as tff
 import tensorflow_text as text
 
+# pylint: disable=g-bad-import-order
+from examples.training import dataset_utils
+from examples.training import model_utils
+# pylint: enable=g-bad-import-order
 
 # Dataset configuration
 _DATASET_SHARD_PATTERN = flags.DEFINE_string(
@@ -40,7 +42,9 @@ _TRAIN_BATCH_SIZE = flags.DEFINE_integer(
     'train_batch_size', 4, 'Batch size on train clients.'
 )
 _MAX_ELEMENTS = flags.DEFINE_integer(
-    'max_elements', None, 'Maximum number of examples to use at every client.',
+    'max_elements',
+    None,
+    'Maximum number of examples to use at every client.',
     required=True,
 )
 
@@ -56,7 +60,9 @@ _TOTAL_ROUNDS = flags.DEFINE_integer(
 
 # Model configuration
 _BASE_RANDOM_SEED = flags.DEFINE_integer(
-    'base_random_seed', 0, 'A random seed governing model initialization.',
+    'base_random_seed',
+    0,
+    'A random seed governing model initialization.',
 )
 _MODEL_CONFIG = flags.DEFINE_enum(
     'model_config',
@@ -65,10 +71,15 @@ _MODEL_CONFIG = flags.DEFINE_enum(
     'Model configuration for the Transformer model.',
 )
 _VOCAB_SIZE = flags.DEFINE_integer(
-    'vocab_size', None, 'Size of the model vocabulary', required=True,
+    'vocab_size',
+    None,
+    'Size of the model vocabulary',
+    required=True,
 )
 _TOKENIZER_PATH = flags.DEFINE_string(
-    'tokenizer_path', None, 'Path to load the tokenizer vocabulary',
+    'tokenizer_path',
+    None,
+    'Path to load the tokenizer vocabulary',
     required=True,
 )
 _MAX_SEQUENCE_LENGTH = flags.DEFINE_integer(
@@ -136,6 +147,7 @@ def main(argv: Sequence[str]) -> None:
   logging.info('Setup client datasets. element spec = %s', element_spec)
 
   cohort_iter = iter(train_cohort_stream)
+
   def training_selection_fn(round_num: int) -> list[tf.data.Dataset]:
     del round_num
     cohort = next(cohort_iter)
@@ -152,7 +164,8 @@ def main(argv: Sequence[str]) -> None:
 
   # Step 3: Set up the learning algorithm.
   client_optimizer = tff.learning.optimizers.build_sgdm(
-      learning_rate=_CLIENT_LR.value)
+      learning_rate=_CLIENT_LR.value
+  )
   server_optimizer = tff.learning.optimizers.build_adam(
       learning_rate=_SERVER_LR.value
   )

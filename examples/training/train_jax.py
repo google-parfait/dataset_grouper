@@ -20,9 +20,6 @@ from absl import app
 from absl import flags
 from absl import logging
 import dataset_grouper as dsgp
-from examples.training import dataset_utils
-from examples.training import jax_fed_algs
-from examples.training import model_utils
 import jax
 import jax.numpy as jnp
 import optax
@@ -32,6 +29,11 @@ from praxis import py_utils
 import tensorflow as tf
 import tensorflow_text as text
 
+# pylint: disable=g-bad-import-order
+from examples.training import dataset_utils
+from examples.training import jax_fed_algs
+from examples.training import model_utils
+# pylint: enable=g-bad-import-order
 
 _BATCH_SIZE = flags.DEFINE_integer('batch_size', 16, 'Batch size.')
 _CKPT_FREQ = flags.DEFINE_integer('ckpt_freq', 500, 'Checkpoint frequency.')
@@ -120,7 +122,7 @@ def main(argv: Sequence[str]) -> None:
     )
 
   partitioned_dataset = dsgp.PartitionedDataset(
-      file_pattern=_DATASET_SHARD_PATTERN.VALUE, tfds_features=_DATASET_NAME
+      file_pattern=_DATASET_SHARD_PATTERN.value, tfds_features=_DATASET_NAME
   )
 
   num_rounds = (
