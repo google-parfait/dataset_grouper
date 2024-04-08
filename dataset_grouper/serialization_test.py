@@ -14,7 +14,7 @@
 """Tests for serialization.py."""
 
 from absl.testing import parameterized
-from dataset_grouper.core import serialization
+from dataset_grouper import serialization
 import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds

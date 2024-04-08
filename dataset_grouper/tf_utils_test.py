@@ -14,7 +14,7 @@
 """Tests for tf_utils."""
 
 from absl.testing import parameterized
-from dataset_grouper.core import tf_utils
+from dataset_grouper import tf_utils
 import tensorflow as tf
 
 

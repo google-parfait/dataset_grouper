@@ -15,7 +15,7 @@
 
 from typing import Optional, Union
 
-from dataset_grouper.core import serialization
+from dataset_grouper import serialization
 import tensorflow as tf
 import tensorflow_datasets as tfds
 

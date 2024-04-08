@@ -17,7 +17,7 @@ from absl.testing import absltest
 import apache_beam as beam
 from apache_beam.testing import test_pipeline
 from apache_beam.testing import util
-from dataset_grouper.core import beam_transforms
+from dataset_grouper import beam_transforms
 import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds

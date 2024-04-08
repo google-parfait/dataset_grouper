@@ -16,8 +16,8 @@
 from typing import Optional
 
 import apache_beam as beam
-from dataset_grouper.core import beam_transforms
-from dataset_grouper.core import types
+from dataset_grouper import beam_transforms
+from dataset_grouper import types
 import tensorflow as tf
 import tensorflow_datasets as tfds
 

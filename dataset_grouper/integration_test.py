@@ -15,8 +15,8 @@
 import os.path
 
 import apache_beam as beam
-from dataset_grouper.core import data_loaders
-from dataset_grouper.core import tfds_pipelines
+from dataset_grouper import data_loaders
+from dataset_grouper import tfds_pipelines
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
