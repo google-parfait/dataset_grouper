@@ -16,9 +16,9 @@
 from collections.abc import Iterable
 
 import apache_beam as beam
-from dataset_grouper.core import count_utils
-from dataset_grouper.core import serialization
-from dataset_grouper.core import types
+from dataset_grouper._src import count_utils
+from dataset_grouper._src import serialization
+from dataset_grouper._src import types
 import tensorflow as tf
 import tensorflow_datasets as tfds
 

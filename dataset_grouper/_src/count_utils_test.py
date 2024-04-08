@@ -17,7 +17,7 @@ from absl.testing import absltest
 import apache_beam as beam
 from apache_beam.testing.util import assert_that
 from apache_beam.testing.util import equal_to
-from dataset_grouper.core import count_utils
+from dataset_grouper._src import count_utils
 
 
 class CountUtilsTest(absltest.TestCase):

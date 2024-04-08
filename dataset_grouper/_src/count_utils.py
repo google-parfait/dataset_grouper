@@ -17,8 +17,8 @@ import collections
 from collections.abc import Iterable
 
 import apache_beam as beam
-from dataset_grouper.core import tf_utils
-from dataset_grouper.core import types
+from dataset_grouper._src import tf_utils
+from dataset_grouper._src import types
 
 
 GroupCount = collections.namedtuple(

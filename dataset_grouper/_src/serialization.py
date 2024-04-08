@@ -13,7 +13,7 @@
 # limitations under the License.
 """Utilities for serializing examples."""
 
-from dataset_grouper.core import types
+from dataset_grouper._src import types
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
