@@ -31,5 +31,5 @@ jobs:
       run: |
         pip install --upgrade "dist/"*".whl"
         pip freeze
-        python -c "import dataset_grouper; print(dataset_grouper.PartitionedDataset)"
+        python -c "import dataset_grouper; print(dataset_grouper.prepare_test_tfrecord_dataset())"
         python -c "import dataset_grouper; print(dataset_grouper.__version__)"
