@@ -23,6 +23,15 @@ To release a new version (e.g. from `1.0.0` -> `2.0.0`):
 
 ## [Unreleased]
 
+## [0.3.0] - 2024-04-09
+
+* Updated README to include installation and usage instructions.
+* Added standard open-source tooling, including package testing and requirements.
+* Add `serialization` and `beam` modules to the API.
+* Added utilities for creating test datasets.
+* Added more examples, including a Dirichlet partitioning example.
+* Removed `preprocess_fn` arg from `PartitionedDataset.build_group_stream`. Preprocessing should now be applied via `tf.data.Dataset.map`.
+
 ## [0.2.1] - 2023-06-12
 
 * Fixed bug where beam pipelines would not work with datasets that were not globally prepared.
@@ -37,7 +46,8 @@ To release a new version (e.g. from `1.0.0` -> `2.0.0`):
 
 * Initial release
 
-[Unreleased]: https://github.com/google-research/dataset_grouper/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/google-research/dataset_grouper/compare/v0.3.0..HEAD
+[0.2.0]: https://github.com/google-research/dataset_grouper/releases/tag/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/google-research/dataset_grouper/releases/tag/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/google-research/dataset_grouper/releases/tag/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/google-research/dataset_grouper/releases/tag/v0.1.0

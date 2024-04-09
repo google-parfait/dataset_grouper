@@ -13,10 +13,9 @@
 # limitations under the License.
 """Dataset Grouper API."""
 
-# A new PyPI release will be pushed everytime `__version__` is increased
 # When changing this, also move the unreleased changes in CHANGELOG.md to the
 # associated version.
-__version__ = '0.2.1'
+__version__ = '0.3.0'
 
 
 from dataset_grouper import beam_transforms as beam
