@@ -27,3 +27,11 @@ pip install --upgrade build
 # (instead of from the srcdir) and the files of the sdist are controlled by the
 # `MANIFEST.in`.
 python -m build
+
+# Publish the Python package.
+pip install --upgrade twine
+twine check "dist/"*".whl"
+twine upload "dist/"*".whl"
+
+# Cleanup
+deactivate
