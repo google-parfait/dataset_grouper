@@ -1,4 +1,4 @@
-# Dataset Grouper - Scalable Dataset Pipelines for Group-Structured Learning
+# Dataset Grouper
 
 ![PyPI version](https://img.shields.io/pypi/v/dataset_grouper)
 
