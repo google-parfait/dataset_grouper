@@ -23,9 +23,9 @@ dependencies = [
 dynamic = ['version']
 
 [project.urls]
-Homepage = 'https://github.com/google-research/dataset_grouper'
-Repository = 'https://github.com/google-research/dataset_grouper'
-Changelog = 'https://github.com/google-research/dataset_grouper/blob/main/CHANGELOG.md'
+Homepage = 'https://github.com/google-parfait/dataset_grouper'
+Repository = 'https://github.com/google-parfait/dataset_grouper'
+Changelog = 'https://github.com/google-parfait/dataset_grouper/blob/main/CHANGELOG.md'
 
 [tool.setuptools.dynamic]
 version = {attr = "dataset_grouper.__version__"}
