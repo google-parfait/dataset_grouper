@@ -19,6 +19,7 @@ from absl import app
 from absl import flags
 from absl import logging
 import dataset_grouper as dsgp
+import federated_language
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import tensorflow_federated as tff
@@ -188,7 +189,7 @@ def main(argv: Sequence[str]) -> None:
       training_process=learning_process,
       training_selection_fn=training_selection_fn,
       total_rounds=_TOTAL_ROUNDS.value,
-      metrics_managers=[tff.program.LoggingReleaseManager()],
+      metrics_managers=[federated_language.program.LoggingReleaseManager()],
   )
 
 
