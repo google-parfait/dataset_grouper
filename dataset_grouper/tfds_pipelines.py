@@ -28,7 +28,7 @@ def tfds_to_tfrecords(
     file_path_prefix: str,
     get_key_fn: types.GetKeyFn,
     file_name_suffix: str = '',
-    num_shards: Optional[int] = None,
+    num_shards: int = 0,
 ) -> beam.Pipeline:
   """Builds a Beam pipeline that partitions a TFDS partitions to TFRecords.
 
@@ -46,8 +46,8 @@ def tfds_to_tfrecords(
     get_key_fn: A function that takes as input an example from the TFDS dataset
       specified, and that returns bytes identifying the group it belongs to.
     file_name_suffix: A common suffix for the files written.
-    num_shards: The number of files (shards) used for output. If not set, the
-      number of shards will be automatically set.
+    num_shards: The number of files (shards) used for output. If set to 0
+      (default), the number of shards will be automatically set.
 
   Returns:
     A `beam.Pipeline`.
