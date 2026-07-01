@@ -78,7 +78,7 @@ _NUM_SHARDS = flags.DEFINE_integer(
 
 def get_key_fn(example: dsgp.Example) -> bytes:
   """A function that extracts the base domain from a C4 example."""
-  url = example[URL_FEATURE].numpy().decode()
+  url = example[URL_FEATURE].numpy().decode()  # pyrefly: ignore[missing-attribute]
   domain = urllib.parse.urlparse(url).netloc
   return domain.encode('utf-8')
 
@@ -96,7 +96,7 @@ def main(argv: Sequence[str]) -> None:
       split=_SPLIT.value,
       file_path_prefix=file_path_prefix,
       get_key_fn=get_key_fn,
-      num_shards=_NUM_SHARDS.value,
+      num_shards=_NUM_SHARDS.value,  # pyrefly: ignore[bad-argument-type]
   )
   with beam.Pipeline() as p:
     partition_pipeline(p)

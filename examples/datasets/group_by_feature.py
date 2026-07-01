@@ -76,9 +76,9 @@ def get_key_fn(example: dsgp.Example) -> bytes:
   """A function that extracts the base domain from a C4 example."""
   group_feature = example[_GROUP_FEATURE.value]
   if hasattr(group_feature, 'dtype') and group_feature.dtype == tf.string:
-    return group_feature.numpy()
+    return group_feature.numpy()  # pyrefly: ignore[missing-attribute]
   else:
-    return str(group_feature.numpy()).encode('utf-8')
+    return str(group_feature.numpy()).encode('utf-8')  # pyrefly: ignore[missing-attribute]
 
 
 def main(argv: Sequence[str]) -> None:
@@ -95,7 +95,7 @@ def main(argv: Sequence[str]) -> None:
       split=_SPLIT.value,
       file_path_prefix=file_path_prefix,
       get_key_fn=get_key_fn,
-      num_shards=_NUM_SHARDS.value,
+      num_shards=_NUM_SHARDS.value,  # pyrefly: ignore[bad-argument-type]
   )
   with beam.Pipeline() as p:
     partition_pipeline(p)

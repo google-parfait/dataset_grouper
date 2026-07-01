@@ -137,7 +137,7 @@ def build_get_key_fn() -> Callable[[dsgp.Example], bytes]:
 
   def get_key_fn(example: dsgp.Example) -> bytes:
     """A function that extracts the base domain from a C4 example."""
-    label = example[_GROUP_FEATURE.value].numpy()
+    label = example[_GROUP_FEATURE.value].numpy()  # pyrefly: ignore[missing-attribute]
     pvals = labels_to_group_probs[label - _FEATURE_MIN.value, :]
     group_id = rng.choice(all_groups, p=pvals)
     return str(group_id).encode('utf-8')
@@ -160,7 +160,7 @@ def main(argv: Sequence[str]) -> None:
       split=_SPLIT.value,
       file_path_prefix=file_path_prefix,
       get_key_fn=get_key_fn,
-      num_shards=_NUM_SHARDS.value,
+      num_shards=_NUM_SHARDS.value,  # pyrefly: ignore[bad-argument-type]
   )
   with beam.Pipeline() as p:
     partition_pipeline(p)

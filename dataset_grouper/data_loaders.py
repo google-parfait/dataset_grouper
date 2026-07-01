@@ -96,14 +96,14 @@ class PartitionedDataset:
       A `tf.data.Dataset`.
     """
     filenames = tf.data.Dataset.list_files(
-        self.file_pattern, shuffle=shuffle_files, seed=shuffle_seed
+        self.file_pattern, shuffle=shuffle_files, seed=shuffle_seed  # pyrefly: ignore[bad-argument-type]
     )
 
     def serialized_tensor_to_dataset(
         serialized_tensor: tf.Tensor,
     ) -> tf.data.Dataset:
       decoded_tensor = self.decode_bytes(serialized_tensor)
-      bytes_ds = tf.data.Dataset.from_tensor_slices(decoded_tensor)
+      bytes_ds = tf.data.Dataset.from_tensor_slices(decoded_tensor)  # pyrefly: ignore[bad-argument-type]
       # This takes the decoded examples, and applies the appropriate TFDS
       # deserialization on each example to coerce them into their original form,
       # matching `self.features_dict`.
@@ -115,7 +115,7 @@ class PartitionedDataset:
 
     if num_parallel_reads is None:
       num_parallel_reads = tf.data.AUTOTUNE
-    serialized_tensor_tensor_stream = tf.data.TFRecordDataset(
+    serialized_tensor_tensor_stream = tf.data.TFRecordDataset(  # pyrefly: ignore[bad-instantiation]
         filenames,
         buffer_size=buffer_size,
         num_parallel_reads=num_parallel_reads,
