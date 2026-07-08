@@ -93,7 +93,7 @@ def main(argv: Sequence[str]) -> None:
       split=_SPLIT.value,
       file_path_prefix=file_path_prefix,
       get_key_fn=get_key_fn,
-      num_shards=_NUM_SHARDS.value,
+      num_shards=_NUM_SHARDS.value,  # pyrefly: ignore[bad-argument-type]
   )
   with beam.Pipeline() as p:
     partition_pipeline(p)
